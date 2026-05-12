@@ -1,0 +1,24 @@
+{
+    "name": "GameAssembly",
+    "rootNamespace": "",
+    "references": [
+        "ca.kaijusolutions.multiplayer",
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "ca.kaijusolutions.multiplayer",
+            "expression": "",
+            "define": "CA_KAIJUSOLUTIONS_MULTIPLAYER"
+        }
+    ],
+    "noEngineReferences": false
+}

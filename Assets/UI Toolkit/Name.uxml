@@ -1,0 +1,6 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="background" style="align-items: center; background-color: rgb(45, 45, 45); padding: 20px; padding-top: 5px; padding-right: 5px; padding-bottom: 5px; padding-left: 5px; border-radius: 15px; -unity-font-style: normal; position: absolute; translate: -50% -100%;">
+        <ui:Image name="icon-image" style="width: 64px; height: 64px; display: none;"/>
+        <ui:Label text="Player" name="name-label" style="color: rgb(255, 255, 255); -unity-font-style: bold; font-size: 14px;"/>
+    </ui:VisualElement>
+</ui:UXML>
