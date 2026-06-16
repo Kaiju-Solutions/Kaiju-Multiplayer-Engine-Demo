@@ -1,6 +1,6 @@
 ﻿# Kaiju Multiplayer Engine Demo
 
-**This provides a simple demo showing [Kaiju Multiplayer Engine](http://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine") with Unity's [Netcode for GameObjects](https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@latest "Netcode for GameObjects"). This was used in the [overview video](https://youtu.be/KJ_WYKuBHsI "Kaiju Multiplayer Engine Overview").**
+**This provides a simple demo showing [Kaiju Multiplayer Engine](http://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine") with Unity's [Netcode for GameObjects](https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@latest "Netcode for GameObjects"). This was used in the [overview video](https://youtu.be/KJ_WYKuBHsI "Kaiju Multiplayer Engine Overview").** Note that some of the code related to UIs has changed since the [overview video](https://youtu.be/KJ_WYKuBHsI "Kaiju Multiplayer Engine Overview") due to changes introduced in [Unity 6.5](https://docs.unity3d.com/6000.5/Documentation/Manual/WhatsNewUnity65.html "Unity 6.5").
 
 ## Getting Started
 
