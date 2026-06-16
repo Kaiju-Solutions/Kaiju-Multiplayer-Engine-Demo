@@ -96,6 +96,12 @@ internal static class EditorDemoSetup
             // Remove missing components.
             foreach (GameObject root in SceneManager.GetActiveScene().GetRootGameObjects())
             {
+                if (root.name == "Kaiju Multiplayer Manager")
+                {
+                    Object.DestroyImmediate(root);
+                    continue;
+                }
+                
                 // Get all child transforms, including inactive ones.
                 foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
                 {
