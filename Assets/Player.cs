@@ -211,7 +211,7 @@ public class Player : NetworkBehaviour
         _icon.image = _user.Icon;
         _icon.style.display = _icon.image != null ? DisplayStyle.Flex : DisplayStyle.None;
     }
-#else
+#endif
     /// <summary>
     /// Callback to set the UI's text to the Steam user's name.
     /// </summary>
@@ -224,5 +224,4 @@ public class Player : NetworkBehaviour
         if (_nameLabel != null) _nameLabel.text = $"Player {OwnerClientId + 1}";
 #endif
     }
-#endif
 }
