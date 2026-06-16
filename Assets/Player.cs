@@ -169,6 +169,11 @@ public class Player : NetworkBehaviour
     /// </summary>
     private void LateUpdate()
     {
+        if (_background == null)
+        {
+            return;
+        }
+        
         // Ensure the UI is positioned above the player.
         Vector2 panelPos = RuntimePanelUtils.CameraTransformWorldToPanel(_background.panel, transform.position + new Vector3(0f, 1.1f, 0f), _camera);
         _background.style.left = panelPos.x;
