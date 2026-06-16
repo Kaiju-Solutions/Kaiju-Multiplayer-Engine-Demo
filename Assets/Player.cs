@@ -17,7 +17,7 @@ using KaijuSolutions.MultiplayerEngine.NetcodeForGameObjects;
 [RequireComponent(typeof(NetworkAnimator))]
 [RequireComponent(typeof(NetworkTransform))]
 [RequireComponent(typeof(NetworkObject))]
-[RequireComponent(typeof(UIDocument))]
+[RequireComponent(typeof(PanelRenderer))]
 public class Player : NetworkBehaviour
 {
     /// <summary>
@@ -71,6 +71,11 @@ public class Player : NetworkBehaviour
     private KaijuUser _user;
 #endif
     /// <summary>
+    /// The renderer for the UI.
+    /// </summary>
+    private PanelRenderer _renderer;
+    
+    /// <summary>
     /// Unity calls Awake when loading an instance of a script component.
     /// </summary>
     private void Awake()
@@ -96,11 +101,35 @@ public class Player : NetworkBehaviour
             gameObject.AddComponent<KaijuUserLink>();
         }
 #endif
+        _renderer = GetComponent<PanelRenderer>();
+        _renderer.RegisterUIReloadCallback(OnUIReload);
+    }
+    
+    /// <summary>
+    /// Called when a GameObject or component is about to be destroyed.
+    /// </summary>
+    public override void OnDestroy()
+    {
+        _renderer.UnregisterUIReloadCallback(OnUIReload);
+        base.OnDestroy();
+    }
+    
+    /// <summary>
+    /// Called when the UI is rendered.
+    /// </summary>
+    /// <param name="renderer">The renderer for the UI.</param>
+    /// <param name="root">The root element of the UI.</param>
+    private void OnUIReload(PanelRenderer renderer, VisualElement root)
+    {
         // Query UI elements.
-        _background = GetComponent<UIDocument>().rootVisualElement.Q("background");
+        _background = root.Q("background");
         _nameLabel = _background.Q<Label>("name-label");
 #if CA_KAIJUSOLUTIONS_MULTIPLAYER
         _icon = _background.Q<Image>("icon-image");
+        
+        // Manually run the callbacks once in case we already have the name or icon.
+        SetName();
+        SetIcon();
 #endif
     }
     
@@ -153,10 +182,6 @@ public class Player : NetworkBehaviour
         // Bind callbacks.
         _user.OnUser += SetName;
         _user.OnIcon += SetIcon;
-        
-        // Manually run the callbacks once in case we already have the name or icon.
-        SetName();
-        SetIcon();
     }
     
     /// <summary>
@@ -174,7 +199,7 @@ public class Player : NetworkBehaviour
     /// </summary>
     private void SetName()
     {
-        _nameLabel.text = _user.Name;
+        if (_nameLabel != null) _nameLabel.text = _user.Name;
     }
     
     /// <summary>
@@ -182,9 +207,10 @@ public class Player : NetworkBehaviour
     /// </summary>
     private void SetIcon()
     {
-        _icon.image = _user.Icon;
+        if (_icon == null) return;
         
         // Hide the image if it is NULL.
+        _icon.image = _user.Icon;
         _icon.style.display = _icon.image != null ? DisplayStyle.Flex : DisplayStyle.None;
     }
 #else

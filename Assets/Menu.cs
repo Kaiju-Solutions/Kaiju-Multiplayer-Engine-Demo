@@ -10,7 +10,7 @@ using Unity.Netcode;
 /// </summary>
 [DisallowMultipleComponent]
 [DefaultExecutionOrder(int.MaxValue)]
-[RequireComponent(typeof(UIDocument))]
+[RequireComponent(typeof(PanelRenderer))]
 public class Menu : MonoBehaviour
 {
     /// <summary>
@@ -29,28 +29,65 @@ public class Menu : MonoBehaviour
     private Button _disconnectButton;
     
     /// <summary>
+    /// The renderer for the UI.
+    /// </summary>
+    private PanelRenderer _renderer;
+    
+    /// <summary>
     /// Unity calls Awake when loading an instance of a script component.
     /// </summary>
     private void Awake()
     {
-        // Cache all buttons.
-        VisualElement root = GetComponent<UIDocument>().rootVisualElement;
-        _hostButton = root.Q<Button>("host-button");
-        _connectButton = root.Q<Button>("connect-button");
-        _disconnectButton = root.Q<Button>("disconnect-button");
+        _renderer = GetComponent<PanelRenderer>();
+        _renderer.RegisterUIReloadCallback(OnUIReload);
+    }
+    
+    /// <summary>
+    /// Called when a GameObject or component is about to be destroyed.
+    /// </summary>
+    private void OnDestroy()
+    {
+        _renderer.UnregisterUIReloadCallback(OnUIReload);
+        CleanupButtons();
     }
 #if CA_KAIJUSOLUTIONS_MULTIPLAYER
     /// <summary>
-    /// Called when a component of an active GameObject is first enabled.
+    /// Called when the UI is rendered.
     /// </summary>
-    private void OnEnable()
+    /// <param name="renderer">The renderer for the UI.</param>
+    /// <param name="root">The root element of the UI.</param>
+    private void OnUIReload(PanelRenderer renderer, VisualElement root)
     {
+        // Unbind any previous button calls.
+        CleanupButtons();
+        
+        // Get the buttons.
+        _hostButton = root.Q<Button>("host-button");
+        _connectButton = root.Q<Button>("connect-button");
+        _disconnectButton = root.Q<Button>("disconnect-button");
+        
         // Bind all buttons. The "Bindable" variations return nothing, making them easy to bind like this.
         // Use the non-"Bindable" variations (i.e. "Host" and "FindLobby") if you want a return Boolean value to check.
         _hostButton.clicked += KaijuMultiplayerManager.HostBindable;
         _connectButton.clicked += KaijuMultiplayerManager.FindLobbyBindable;
         _disconnectButton.clicked += KaijuMultiplayerManager.Shutdown;
-        
+    }
+    
+    /// <summary>
+    /// Method to clean up buttons.
+    /// </summary>
+    private void CleanupButtons()
+    {
+        if (_hostButton != null) _hostButton.clicked -= KaijuMultiplayerManager.HostBindable;
+        if (_connectButton != null) _connectButton.clicked -= KaijuMultiplayerManager.FindLobbyBindable;
+        if (_disconnectButton != null) _disconnectButton.clicked -= KaijuMultiplayerManager.Shutdown;
+    }
+    
+    /// <summary>
+    /// Called when a component of an active GameObject is first enabled.
+    /// </summary>
+    private void OnEnable()
+    {
         // Bind callbacks so the UI displays properly based on if we are in a game or not.
         KaijuMultiplayerManager.OnStart += OnConnect;
         KaijuMultiplayerManager.OnShutdown += OnDisconnect;
@@ -71,10 +108,7 @@ public class Menu : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
-        // Unbind buttons and callbacks.
-        _hostButton.clicked -= KaijuMultiplayerManager.HostBindable;
-        _connectButton.clicked -= KaijuMultiplayerManager.FindLobbyBindable;
-        _disconnectButton.clicked -= KaijuMultiplayerManager.Shutdown;
+        // Unbind callbacks.
         KaijuMultiplayerManager.OnStart -= OnConnect;
         KaijuMultiplayerManager.OnShutdown -= OnDisconnect;
     }
@@ -106,14 +140,42 @@ public class Menu : MonoBehaviour
     }
 #else
     /// <summary>
+    /// Called when the UI is rendered.
+    /// </summary>
+    /// <param name="renderer">The renderer for the UI.</param>
+    /// <param name="root">The root element of the UI.</param>
+    private void OnUIReload(PanelRenderer renderer, VisualElement root)
+    {
+        // Unbind any previous button calls.
+        CleanupButtons();
+        
+        // Get the buttons.
+        _hostButton = root.Q<Button>("host-button");
+        _connectButton = root.Q<Button>("connect-button");
+        _disconnectButton = root.Q<Button>("disconnect-button");
+        
+        // Bind the button calls.
+        _hostButton.clicked += Host;
+        _connectButton.clicked += Connect;
+        _disconnectButton.clicked += Disconnect;
+    }
+    
+    /// <summary>
+    /// Method to clean up buttons.
+    /// </summary>
+    private void CleanupButtons()
+    {
+        if (_hostButton != null) _hostButton.clicked -= Host;
+        if (_connectButton != null) _connectButton.clicked -= Connect;
+        if (_disconnectButton != null) _disconnectButton.clicked -= Disconnect;
+    }
+    
+    /// <summary>
     /// Called when a component of an active GameObject is first enabled.
     /// </summary>
     private void OnEnable()
     {
         if (NetworkManager.Singleton == null) throw new("NetworkManager not found");
-        _hostButton.clicked += Host;
-        _connectButton.clicked += Connect;
-        _disconnectButton.clicked += Disconnect;
         NetworkManager.Singleton.OnClientStarted += OnConnect;
         NetworkManager.Singleton.OnClientStopped += OnDisconnect;
         if (NetworkManager.Singleton.IsConnectedClient) OnConnect(); else OnDisconnect();
@@ -124,9 +186,6 @@ public class Menu : MonoBehaviour
     /// </summary>
     private void OnDisable()
     {
-        _hostButton.clicked -= Host;
-        _connectButton.clicked -= Connect;
-        _disconnectButton.clicked -= Disconnect;
         if (NetworkManager.Singleton == null) return;
         NetworkManager.Singleton.OnClientStarted -= OnConnect;
         NetworkManager.Singleton.OnClientStopped -= OnDisconnect;
