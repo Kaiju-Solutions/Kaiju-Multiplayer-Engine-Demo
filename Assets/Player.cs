@@ -126,9 +126,10 @@ public class Player : NetworkBehaviour
         _nameLabel = _background.Q<Label>("name-label");
 #if CA_KAIJUSOLUTIONS_MULTIPLAYER
         _icon = _background.Q<Image>("icon-image");
-        
+#endif
         // Manually run the callbacks once in case we already have the name or icon.
         SetName();
+#if CA_KAIJUSOLUTIONS_MULTIPLAYER
         SetIcon();
 #endif
     }
@@ -195,14 +196,6 @@ public class Player : NetworkBehaviour
     }
     
     /// <summary>
-    /// Callback to set the UI's text to the Steam user's name.
-    /// </summary>
-    private void SetName()
-    {
-        if (_nameLabel != null) _nameLabel.text = _user.Name;
-    }
-    
-    /// <summary>
     /// Callback to set the UI's image to the Steam user's icon.
     /// </summary>
     private void SetIcon()
@@ -215,12 +208,16 @@ public class Player : NetworkBehaviour
     }
 #else
     /// <summary>
-    /// Start is called on the frame when a script is enabled just before any of the Update methods are called the first time. This function can be a coroutine.
+    /// Callback to set the UI's text to the Steam user's name.
     /// </summary>
-    private void Start()
+    private void SetName()
     {
+#if CA_KAIJUSOLUTIONS_MULTIPLAYER
+        if (_nameLabel != null) _nameLabel.text = _user.Name;
+#else
         // When Kaiju Multiplayer Engine is not installed, there is no icon, and user the Netcode for GameObjects player ID as a placeholder name.
-        _nameLabel.text = $"Player {OwnerClientId + 1}";
+        if (_nameLabel != null) _nameLabel.text = $"Player {OwnerClientId + 1}";
+#endif
     }
 #endif
 }
