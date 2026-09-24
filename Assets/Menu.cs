@@ -144,7 +144,8 @@ public class Menu : MonoBehaviour
     /// </summary>
     /// <param name="renderer">The renderer for the UI.</param>
     /// <param name="root">The root element of the UI.</param>
-    private void OnUIReload(PanelRenderer renderer, VisualElement root)
+    /// <param name="version">The version of the UI that was reloaded.</param>
+    private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
     {
         // Unbind any previous button calls.
         CleanupButtons();

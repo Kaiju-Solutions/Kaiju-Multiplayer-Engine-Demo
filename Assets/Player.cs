@@ -119,7 +119,8 @@ public class Player : NetworkBehaviour
     /// </summary>
     /// <param name="renderer">The renderer for the UI.</param>
     /// <param name="root">The root element of the UI.</param>
-    private void OnUIReload(PanelRenderer renderer, VisualElement root)
+    /// <param name="version">The version of the UI that was reloaded.</param>
+    private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
     {
         // Query UI elements.
         _background = root.Q("background");
