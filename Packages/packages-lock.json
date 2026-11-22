@@ -5,7 +5,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "ba71581f1ed7349e8d0f17ddc6f135dd3bc8a6a3"
+      "hash": "ea51b029a5dbcb47a99d3c1fac930b811672ed32"
     },
     "com.unity.burst": {
       "version": "2.0.0",
@@ -37,7 +37,7 @@
       "dependencies": {}
     },
     "com.unity.ide.rider": {
-      "version": "3.1.0",
+      "version": "3.1.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
