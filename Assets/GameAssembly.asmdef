@@ -4,11 +4,16 @@
     "references": [
         "ca.kaijusolutions.multiplayer",
         "Unity.InputSystem",
-        "Unity.Netcode.Runtime"
+        "Unity.NetCode",
+        "Unity.Networking.Transport",
+        "Unity.Entities",
+        "Unity.Collections",
+        "Unity.Mathematics",
+        "Unity.Transforms"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,

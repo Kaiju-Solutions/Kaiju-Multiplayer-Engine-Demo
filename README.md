@@ -1,24 +1,25 @@
-﻿# Kaiju Multiplayer Engine Demo
+# Kaiju Multiplayer Engine Demo
 
-**This provides a simple demo showing [Kaiju Multiplayer Engine](http://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine") with Unity's [Netcode for GameObjects](https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@latest "Netcode for GameObjects"). This was used in the [overview video](https://youtu.be/KJ_WYKuBHsI "Kaiju Multiplayer Engine Overview").** Note that some of the code related to UIs has changed since the [overview video](https://youtu.be/KJ_WYKuBHsI "Kaiju Multiplayer Engine Overview") due to changes introduced in [Unity 6.5](https://docs.unity3d.com/6000.5/Documentation/Manual/WhatsNewUnity65.html "Unity 6.5").
+Move an animated character around a shared level with WASD. The player prefab is a Unity [Netcode](https://docs.unity3d.com/Packages/com.unity.netcode@latest "Netcode") ghost. The same prefab and movement code run with or without [Kaiju Multiplayer Engine](https://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine").
 
 ## Getting Started
 
-1. Install [Git](https://git-scm.com "Git") so [Steamworks.NET](https://github.com/rlabrecque/Steamworks.NET "Steamworks.NET") can automatically be installed into the project.
-2. Clone or download this project and open it.
-3. Install [Kaiju Multiplayer Engine](http://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine") following the [getting started instructions](https://multiplayer.kaijusolutions.ca/manual/getting-started.html "Kaiju Multiplayer Engine - Getting Started").
-4. If prompted to reload your scene, click to do so. This popup is because the demo project will automatically set up [Kaiju Multiplayer Engine](http://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine") in the scene and on the player prefab by adding the needed GameObjects and components once it is installed.
+1. Install Unity 6.7 and [Git](https://git-scm.com "Git"), which Unity uses to download [Steamworks.NET](https://github.com/rlabrecque/Steamworks.NET "Steamworks.NET").
+2. Open the project and load **Assets/Level.unity**. Enter Play mode and select **Host**. Use **Connect** in a second instance and **Disconnect** to leave.
+3. To use Steam lobbies, install your licensed copy of Kaiju Multiplayer Engine through its [getting started guide](https://multiplayer.kaijusolutions.ca/manual/getting-started.html "Getting Started"). The demo also detects an embedded copy at `Packages/ca.kaijusolutions.multiplayer`. The demo supplies its own transport at play time, so you can skip the Netcode setup prompt. Use **Project Settings > Kaiju Multiplayer Engine** to configure the Steam app ID.
 
-## Playing
+## Playing With and Without the Package
 
-- If you play before installing [Kaiju Multiplayer Engine](http://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine"), it will use [Netcode for GameObjects](https://docs.unity3d.com/Packages/com.unity.netcode.gameobjects@latest "Netcode for GameObjects") directly, identical to the beginning of the [overview video](https://youtu.be/KJ_WYKuBHsI "Kaiju Multiplayer Engine Overview").
-- Once [Kaiju Multiplayer Engine](http://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine") is installed, playing will behave the same as the end of the [overview video](https://youtu.be/KJ_WYKuBHsI "Kaiju Multiplayer Engine Overview").
-- These changes are automatically made due to the [`GameAssembly`](/Assets/GameAssembly.asmdef "GameAssembly") [assembly definition file](https://docs.unity3d.com/Manual/assembly-definition-files.html "Unity - Organizing scripts into assemblies") with its [conditional including of the Kaiju Multiplayer Engine assembly.](https://docs.unity3d.com/Manual/assembly-definition-includes.html "Unity - https://docs.unity3d.com/Manual/assembly-definition-includes.html").
+- **With Kaiju Multiplayer Engine**, Host creates a lobby and Connect searches for one. The demo displays each participant’s name and avatar and enables voice chat when the feature is available. You can test local sessions using [Multiplayer Play Mode](https://docs.unity3d.com/Packages/com.unity.multiplayer.playmode@latest "Multiplayer Play Mode").
+- **With Netcode alone**, Host listens on UDP port 7777 and Connect joins the host on the same machine. Characters display their Netcode player numbers. A fresh clone runs this mode until you install Kaiju Multiplayer Engine. To switch back, remove the package or move the embedded copy outside the project with Unity closed.
+- The [game assembly definition](Assets/GameAssembly.asmdef "GameAssembly") enables `CA_KAIJUSOLUTIONS_MULTIPLAYER` when the package is installed. [Menu.cs](Assets/Menu.cs "Menu") shows both session workflows. [DemoNetworking.cs](Assets/DemoNetworking.cs "DemoNetworking") spawns one owned ghost per connection and [Player.cs](Assets/Player.cs "Player") handles movement, animation, and player labels.
 
 ## License
 
 The [MIT license](LICENSE.md "MIT License") applies to this repository's demo. You are free to reuse, modify, or share this demo project, but you cannot include [Kaiju Multiplayer Engine](http://multiplayer.kaijusolutions.ca "Kaiju Multiplayer Engine") itself when you do so. See the [Kaiju Multiplayer Engine license](https://multiplayer.kaijusolutions.ca/license "Kaiju Multiplayer Engine - License") for its details.
 
 ## Resources
+
+The [overview video](https://youtu.be/KJ_WYKuBHsI "Kaiju Multiplayer Engine Overview") demonstrates the original edition of this demo.
 
 Assets are from the [Platformer Kit](https://kenney.nl/assets/platformer-kit "Platformer Kit - Kenney") kit by [Kenney](https://kenney.nl "Kenney") under the [Creative Commons CC0 license](https://creativecommons.org/publicdomain/zero/1.0 "CC0 1.0 Universal").

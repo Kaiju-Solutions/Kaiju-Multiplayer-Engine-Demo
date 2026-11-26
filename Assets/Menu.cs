@@ -1,240 +1,123 @@
+using Unity.Netcode;
+using Unity.Networking.Transport;
 using UnityEngine;
 using UnityEngine.UIElements;
 #if CA_KAIJUSOLUTIONS_MULTIPLAYER
 using KaijuSolutions.MultiplayerEngine;
-#else
-using Unity.Netcode;
 #endif
 /// <summary>
-/// Handle the menu buttons.
+/// Hosts, joins, or leaves a demo session using the available networking backend.
 /// </summary>
-[DisallowMultipleComponent]
-[DefaultExecutionOrder(int.MaxValue)]
 [RequireComponent(typeof(PanelRenderer))]
-public class Menu : MonoBehaviour
+public sealed class Menu : MonoBehaviour
 {
-    /// <summary>
-    /// Button to host a game.
-    /// </summary>
-    private Button _hostButton;
-    
-    /// <summary>
-    /// Button to connect to a game. When using Steam, this will search for an open game, and host if one is not found.
-    /// </summary>
-    private Button _connectButton;
-    
-    /// <summary>
-    /// Button to leave a game.
-    /// </summary>
-    private Button _disconnectButton;
-    
-    /// <summary>
-    /// The renderer for the UI.
-    /// </summary>
-    private PanelRenderer _renderer;
-    
-    /// <summary>
-    /// Unity calls Awake when loading an instance of a script component.
-    /// </summary>
-    private void Awake()
+    private Button _host;
+    private Button _connect;
+    private Button _disconnect;
+#if !CA_KAIJUSOLUTIONS_MULTIPLAYER
+    private Connection _connection;
+    private bool _started;
+#endif
+    private void OnEnable()
     {
-        _renderer = GetComponent<PanelRenderer>();
-        _renderer.RegisterUIReloadCallback(OnUIReload);
+        GetComponent<PanelRenderer>().RegisterUIReloadCallback(BindPanel);
+#if CA_KAIJUSOLUTIONS_MULTIPLAYER && !DISABLE_KAIJU_VOICE
+        KaijuMultiplayerManager.OnStart += EnableVoice;
+        KaijuMultiplayerManager.OnShutdown += DisableVoice;
+#endif
     }
-    
-    /// <summary>
-    /// Called when a GameObject or component is about to be destroyed.
-    /// </summary>
-    private void OnDestroy()
+
+    private void OnDisable()
     {
-        _renderer.UnregisterUIReloadCallback(OnUIReload);
-        CleanupButtons();
+        GetComponent<PanelRenderer>().UnregisterUIReloadCallback(BindPanel);
+        UnbindButtons();
+#if CA_KAIJUSOLUTIONS_MULTIPLAYER && !DISABLE_KAIJU_VOICE
+        KaijuMultiplayerManager.OnStart -= EnableVoice;
+        KaijuMultiplayerManager.OnShutdown -= DisableVoice;
+#endif
     }
+
+    private void BindPanel(PanelRenderer renderer, VisualElement root, int version)
+    {
+        UnbindButtons();
+        _host = root.Q<Button>("host-button");
+        _connect = root.Q<Button>("connect-button");
+        _disconnect = root.Q<Button>("disconnect-button");
+        _host.clicked += Host;
+        _connect.clicked += Connect;
+        _disconnect.clicked += Disconnect;
+        Update();
+    }
+
+    private void UnbindButtons()
+    {
+        if (_host != null)
+        {
+            _host.clicked -= Host;
+            _connect.clicked -= Connect;
+            _disconnect.clicked -= Disconnect;
+        }
+    }
+
+    private void Update()
+    {
 #if CA_KAIJUSOLUTIONS_MULTIPLAYER
-    /// <summary>
-    /// Called when the UI is rendered.
-    /// </summary>
-    /// <param name="renderer">The renderer for the UI.</param>
-    /// <param name="root">The root element of the UI.</param>
-    private void OnUIReload(PanelRenderer renderer, VisualElement root)
-    {
-        // Unbind any previous button calls.
-        CleanupButtons();
-        
-        // Get the buttons.
-        _hostButton = root.Q<Button>("host-button");
-        _connectButton = root.Q<Button>("connect-button");
-        _disconnectButton = root.Q<Button>("disconnect-button");
-        
-        // Bind all buttons. The "Bindable" variations return nothing, making them easy to bind like this.
-        // Use the non-"Bindable" variations (i.e. "Host" and "FindLobby") if you want a return Boolean value to check.
-        _hostButton.clicked += KaijuMultiplayerManager.HostBindable;
-        _connectButton.clicked += KaijuMultiplayerManager.FindLobbyBindable;
-        _disconnectButton.clicked += KaijuMultiplayerManager.Shutdown;
-    }
-    
-    /// <summary>
-    /// Method to clean up buttons.
-    /// </summary>
-    private void CleanupButtons()
-    {
-        if (_hostButton != null) _hostButton.clicked -= KaijuMultiplayerManager.HostBindable;
-        if (_connectButton != null) _connectButton.clicked -= KaijuMultiplayerManager.FindLobbyBindable;
-        if (_disconnectButton != null) _disconnectButton.clicked -= KaijuMultiplayerManager.Shutdown;
-    }
-    
-    /// <summary>
-    /// Called when a component of an active GameObject is first enabled.
-    /// </summary>
-    private void OnEnable()
-    {
-        // Bind callbacks so the UI displays properly based on if we are in a game or not.
-        KaijuMultiplayerManager.OnStart += OnConnect;
-        KaijuMultiplayerManager.OnShutdown += OnDisconnect;
-        
-        // Ensure the UI is initialized into the proper state by running the correct callback once manually.
-        if (KaijuMultiplayerManager.InLobby)
-        {
-            OnConnect();
-        }
-        else
-        {
-            OnDisconnect();
-        }
-    }
-    
-    /// <summary>
-    /// Called when a component itself is disabled or its parent GameObject is deactivated.
-    /// </summary>
-    private void OnDisable()
-    {
-        // Unbind callbacks.
-        KaijuMultiplayerManager.OnStart -= OnConnect;
-        KaijuMultiplayerManager.OnShutdown -= OnDisconnect;
-    }
-    
-    /// <summary>
-    /// Callback for when we are connected to a game.
-    /// </summary>
-    private void OnConnect()
-    {
-        // In this demo, when in a game, voice chat is enabled.
-        KaijuMultiplayerManager.MicEnabled = true;
-        
-        // Sync the UI buttons.
-        _hostButton.style.display = _connectButton.style.display = DisplayStyle.None;
-        _disconnectButton.style.display = DisplayStyle.Flex;
-    }
-    
-    /// <summary>
-    /// Callback for when we leave a game.
-    /// </summary>
-    private void OnDisconnect()
-    {
-        // Turn off our mic in the menu.
-        KaijuMultiplayerManager.MicEnabled = false;
-        
-        // Sync the UI buttons.
-        _disconnectButton.style.display = DisplayStyle.None;
-        _hostButton.style.display = _connectButton.style.display = DisplayStyle.Flex;
-    }
+        bool active = KaijuMultiplayerManager.InLobby;
 #else
-    /// <summary>
-    /// Called when the UI is rendered.
-    /// </summary>
-    /// <param name="renderer">The renderer for the UI.</param>
-    /// <param name="root">The root element of the UI.</param>
-    /// <param name="version">The version of the UI that was reloaded.</param>
-    private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
-    {
-        // Unbind any previous button calls.
-        CleanupButtons();
-        
-        // Get the buttons.
-        _hostButton = root.Q<Button>("host-button");
-        _connectButton = root.Q<Button>("connect-button");
-        _disconnectButton = root.Q<Button>("disconnect-button");
-        
-        // Bind the button calls.
-        _hostButton.clicked += Host;
-        _connectButton.clicked += Connect;
-        _disconnectButton.clicked += Disconnect;
+        if (_started && (!_connection.IsValid() || _connection.GetConnectionState() == ConnectionState.State.Disconnected))
+        {
+            Disconnect();
+        }
+        bool active = _started;
+#endif
+        if (_host != null)
+        {
+            _host.style.display = _connect.style.display = active ? DisplayStyle.None : DisplayStyle.Flex;
+            _disconnect.style.display = active ? DisplayStyle.Flex : DisplayStyle.None;
+        }
     }
-    
-    /// <summary>
-    /// Method to clean up buttons.
-    /// </summary>
-    private void CleanupButtons()
+
+    private void Host()
     {
-        if (_hostButton != null) _hostButton.clicked -= Host;
-        if (_connectButton != null) _connectButton.clicked -= Connect;
-        if (_disconnectButton != null) _disconnectButton.clicked -= Disconnect;
+#if CA_KAIJUSOLUTIONS_MULTIPLAYER
+        _ = KaijuMultiplayerManager.Host();
+#else
+        _connection = Netcode.StartAsHost(NetworkEndpoint.AnyIpv4.WithPort(7777));
+        _started = _connection.IsValid();
+        if (!_started)
+        {
+            Netcode.Shutdown();
+        }
+#endif
     }
-    
-    /// <summary>
-    /// Called when a component of an active GameObject is first enabled.
-    /// </summary>
-    private void OnEnable()
+
+    private void Connect()
     {
-        if (NetworkManager.Singleton == null) throw new("NetworkManager not found");
-        NetworkManager.Singleton.OnClientStarted += OnConnect;
-        NetworkManager.Singleton.OnClientStopped += OnDisconnect;
-        if (NetworkManager.Singleton.IsConnectedClient) OnConnect(); else OnDisconnect();
+#if CA_KAIJUSOLUTIONS_MULTIPLAYER
+        _ = KaijuMultiplayerManager.FindLobby();
+#else
+        _connection = Netcode.Connect(NetworkEndpoint.LoopbackIpv4.WithPort(7777));
+        _started = _connection.IsValid();
+        if (!_started)
+        {
+            Netcode.Shutdown();
+        }
+#endif
     }
-    
-    /// <summary>
-    /// Called when a component itself is disabled or its parent GameObject is deactivated.
-    /// </summary>
-    private void OnDisable()
+
+    private void Disconnect()
     {
-        if (NetworkManager.Singleton == null) return;
-        NetworkManager.Singleton.OnClientStarted -= OnConnect;
-        NetworkManager.Singleton.OnClientStopped -= OnDisconnect;
+#if CA_KAIJUSOLUTIONS_MULTIPLAYER
+        KaijuMultiplayerManager.Shutdown();
+#else
+        _started = false;
+        _connection = default;
+        Netcode.Shutdown();
+#endif
     }
-    
-    /// <summary>
-    /// Since Netcode for GameObjects' "StartHost" method returns a Boolean, we can't bind to it directly and need this helper method.
-    /// </summary>
-    private static void Host()
-    {
-        NetworkManager.Singleton.StartHost();
-    }
-    
-    /// <summary>
-    /// Since Netcode for GameObjects' "StartClient" method returns a Boolean, we can't bind to it directly and need this helper method.
-    /// </summary>
-    private static void Connect()
-    {
-        NetworkManager.Singleton.StartClient();
-    }
-    
-    /// <summary>
-    /// Since Netcode for GameObjects' "Shutdown" method taks a Boolean input, we can't bind to it directly and need this helper method.
-    /// </summary>
-    private static void Disconnect()
-    {
-        NetworkManager.Singleton.Shutdown();
-    }
-    
-    /// <summary>
-    /// Callback for when we are connected to a game.
-    /// </summary>
-    private void OnConnect()
-    {
-        // Sync the UI buttons.
-        _hostButton.style.display = _connectButton.style.display = DisplayStyle.None;
-        _disconnectButton.style.display = DisplayStyle.Flex;
-    }
-    
-    /// <summary>
-    /// Callback for when we leave a game.
-    /// <param name="_">Netcode for GameObjects has a parameter for whether this was a disconnect as a server or a client which this can ignore.</param>
-    /// </summary>
-    private void OnDisconnect(bool _ = false)
-    {
-        // Sync the UI buttons.
-        _disconnectButton.style.display = DisplayStyle.None;
-        _hostButton.style.display = _connectButton.style.display = DisplayStyle.Flex;
-    }
+#if CA_KAIJUSOLUTIONS_MULTIPLAYER && !DISABLE_KAIJU_VOICE
+    private static void EnableVoice() => KaijuMultiplayerManager.MicEnabled = true;
+
+    private static void DisableVoice() => KaijuMultiplayerManager.MicEnabled = false;
 #endif
 }

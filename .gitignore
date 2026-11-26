@@ -80,3 +80,5 @@ crashlytics-build.properties
 
 # Kaiju Multiplayer Engine
 /[Pp]ackages/ca.kaijusolutions.multiplayer
+/Assets/KaijuMultiplayerSettings.asset
+/Assets/KaijuMultiplayerSettings.asset.meta
